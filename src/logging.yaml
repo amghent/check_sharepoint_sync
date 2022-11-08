@@ -16,7 +16,7 @@ handlers:
 
 formatters:
   default:
-    format                : '%(asctime)s.%(msecs)03d %(levelname)-8s: %(message)s [%(name)s]'
+    format                : '%(asctime)s.%(msecs)03d %(levelname)-8s: %(message)s'
     datefmt               : '%Y-%m-%d %H:%M:%S'
 
   message_only:
