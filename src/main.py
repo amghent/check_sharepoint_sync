@@ -2,6 +2,8 @@ import logging.config
 import os
 import socket
 import smtplib
+import sys
+
 import yaml
 
 from croniter import croniter
@@ -18,10 +20,7 @@ APP_VERSION: str = ""
 
 CURRENT_DIR: Path = Path(__file__).parent
 HOME_DIR: Path = Path.home()
-AM_PYTHON_DIR_NL: str = os.path.join(HOME_DIR, "ArcelorMittal", "AM Python - Documenten")
-AM_PYTHON_DIR_EN: str = os.path.join(HOME_DIR, "ArcelorMittal", "AM Python - Documents")
-AM_PYTHON_DIR: str = AM_PYTHON_DIR_NL
-SYNC_DIR: str = ""
+SYNC_DIR: Path = HOME_DIR
 MACHINE_NAME: str = ""
 
 LOGGER = logging.getLogger(APP_NAME)
@@ -53,26 +52,13 @@ def read_config():
     return config_data
 
 
-def verify_am_python_dir():
-    global AM_PYTHON_DIR
-
+def log_dirs():
+    LOGGER.info(f"Current directory: {CURRENT_DIR} ")
     LOGGER.info(f"User's home directory: {HOME_DIR} ")
-
-    if os.path.exists(AM_PYTHON_DIR_NL):
-        pass
-    elif os.path.exists(AM_PYTHON_DIR_EN):
-        AM_PYTHON_DIR = AM_PYTHON_DIR_EN
-    else:
-        raise Exception("Cannot find the AM Python - Document(en/s) directory.  "
-                        "Make sure you have this directory synced on this machine.")
-
-    LOGGER.info(f"AM Python - Document(en/s) directory: {AM_PYTHON_DIR}")
 
 
 def set_sync_dir(config_data):
     global SYNC_DIR
-
-    SYNC_DIR = AM_PYTHON_DIR
 
     for sub_dir in config_data["sync_dir"]:
         SYNC_DIR = os.path.join(SYNC_DIR, sub_dir)
@@ -94,10 +80,14 @@ def get_machine_name():
 def write_info():
     output_path = os.path.join(SYNC_DIR, f"{MACHINE_NAME}.txt")
 
-    with open(output_path, "w") as output_file:
-        output_file.write(f"Output written on {datetime.now()}\n\n(the content of this file is not important)")
+    try:
+        with open(output_path, "w") as output_file:
+            output_file.write(f"Output written on {datetime.now()}\n\n(the content of this file is not important)")
 
-    LOGGER.info(f"Writing info on sync directory for machine in {MACHINE_NAME}.txt")
+        LOGGER.info(f"Writing info on sync directory for machine in {MACHINE_NAME}.txt")
+    except PermissionError as err:
+        LOGGER.error(f"Error writing info on sync directory: {err}")
+        sys.exit(1)
 
 
 def check_info(config_data):
@@ -161,7 +151,7 @@ def notify(config_data):
 
 
 def run(config_data):
-    verify_am_python_dir()
+    log_dirs()
     set_sync_dir(config_data=config_data)
     get_machine_name()
     write_info()

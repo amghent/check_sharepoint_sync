@@ -1,7 +1,7 @@
 ---
 
 name: check_sharepoint_sync
-version: 1.0.0
+version: 1.0.1
 
 cron: 0,15,30,45 * * * *
 sleep: 60
@@ -16,6 +16,8 @@ mail:
     - yves.vindevogel.external@arcelormittal.com
 
 sync_dir:
+  - ArcelorMittal
+  - AM Python - Documenten
   - Jobs
   - Belgium
   - check_sharepoint_sync
