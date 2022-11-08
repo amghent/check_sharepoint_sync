@@ -2,8 +2,6 @@ import logging.config
 import os
 import socket
 import smtplib
-from time import sleep
-
 import yaml
 
 from croniter import croniter
@@ -12,16 +10,17 @@ from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
+from time import sleep
 
 
 APP_NAME: str = ""
 APP_VERSION: str = ""
 
-CURRENT_DIR = Path(__file__).parent
-HOME_DIR = Path.home()
-AM_PYTHON_DIR_NL = os.path.join(HOME_DIR, "ArcelorMittal", "AM Python - Documenten")
-AM_PYTHON_DIR_EN = os.path.join(HOME_DIR, "ArcelorMittal", "AM Python - Documents")
-AM_PYTHON_DIR = AM_PYTHON_DIR_NL
+CURRENT_DIR: Path = Path(__file__).parent
+HOME_DIR: Path = Path.home()
+AM_PYTHON_DIR_NL: str = os.path.join(HOME_DIR, "ArcelorMittal", "AM Python - Documenten")
+AM_PYTHON_DIR_EN: str = os.path.join(HOME_DIR, "ArcelorMittal", "AM Python - Documents")
+AM_PYTHON_DIR: str = AM_PYTHON_DIR_NL
 SYNC_DIR: str = ""
 MACHINE_NAME: str = ""
 
@@ -155,10 +154,10 @@ def notify(config_data):
 
         msg.attach(MIMEText(f"{config_data['mail']['text']}: {MACHINE_NAME}", "plain"))
 
-        server.send_message(msg)
+        server.send_message(msg=msg)
 
         LOGGER.info(f"Notifying {msg['to']}")
-        LOGGER.info(f"Exiting, sync is NOT OK on {MACHINE_NAME}")
+        LOGGER.info(f"Exiting, sync is NOT OK on {MACHINE_NAME} (exit on first fail)")
 
 
 def run(config_data):
@@ -170,7 +169,7 @@ def run(config_data):
     ok = check_info(config_data=config_data)
 
     if not ok:
-        notify(config_data)
+        notify(config_data=config_data)
 
 
 def main():
@@ -179,7 +178,7 @@ def main():
 
     to_the_second = False
     cron = croniter(config_data["cron"], datetime.now())
-    next_run = cron.get_next(datetime)
+    next_run = cron.get_next(ret_type=datetime)
     default_sleep = int(config_data["sleep"])
 
     LOGGER.info(f"Next run at: {next_run}")
@@ -187,16 +186,16 @@ def main():
 
     while True:
         if datetime.now() > next_run:
-            run(config_data)
+            run(config_data=config_data)
 
             to_the_second = True
-            next_run = cron.get_next(datetime)
+            next_run = cron.get_next(ret_type=datetime)
             LOGGER.info(f"Next run at: {next_run}")
         else:
             if to_the_second:
-                sleep(default_sleep)
+                sleep(secs=default_sleep)
             else:
-                sleep(1)
+                sleep(secs=1)
 
 
 if __name__ == "__main__":
