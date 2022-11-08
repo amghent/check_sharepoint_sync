@@ -170,6 +170,7 @@ def main():
     cron = croniter(config_data["cron"], datetime.now())
     next_run = cron.get_next(ret_type=datetime)
     default_sleep = int(config_data["sleep"])
+    prev_second = -1
 
     LOGGER.info(f"Next run at: {next_run}")
     LOGGER.info(f"Default sleep: {default_sleep}")
@@ -177,17 +178,22 @@ def main():
     while True:
         LOGGER.debug("Checking ...")
 
-        if datetime.now() > next_run:
+        now = datetime.now()
+
+        if now > next_run:
             run(config_data=config_data)
 
-            to_the_second = True
             next_run = cron.get_next(ret_type=datetime)
             LOGGER.info(f"Next run at: {next_run}")
         else:
             if to_the_second:
                 sleep(default_sleep)
             else:
-                sleep(1)
+                if prev_second < now.second:
+                    to_the_second = True
+                else:
+                    prev_second = now.second
+                    sleep(1)
 
 
 if __name__ == "__main__":
