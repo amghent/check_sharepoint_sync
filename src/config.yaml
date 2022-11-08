@@ -14,6 +14,7 @@ mail:
   from: check_sharepoint_sync@arcelormittal.com
   to:
     - yves.vindevogel.external@arcelormittal.com
+    - luc.vandeputte@arcelormittal.com
 
 sync_dir:
   - ArcelorMittal
