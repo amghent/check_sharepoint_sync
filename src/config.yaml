@@ -1,0 +1,31 @@
+---
+
+name: check_sharepoint_sync
+version: 1.0.1
+
+cron: 0,15,30,45 * * * *
+sleep: 60
+
+mail:
+  server: mail.sidmar.be
+  port: 25
+  subject: A machine is not syncing sharepoint
+  text: The sharepoint sync seems to be out of date on machine
+  from: check_sharepoint_sync@arcelormittal.com
+  to:
+    - yves.vindevogel.external@arcelormittal.com
+    - luc.vandeputte@arcelormittal.com
+
+sync_dir:
+  - ArcelorMittal
+  - AM Python - Documenten
+  - Jobs
+  - Belgium
+  - check_sharepoint_sync
+
+skip_files:
+  - README_FIRST.txt
+
+sync_delta: 600
+
+
