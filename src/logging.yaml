@@ -5,13 +5,13 @@ handlers:
   console:
     class                 : logging.StreamHandler
     formatter             : message_only
-    level                 : NOTSET
+    level                 : INFO
     stream                : ext://sys.stdout
 
   file:
     class                 : logging.handlers.RotatingFileHandler
     formatter             : default
-    level                 : NOTSET
+    level                 : DEBUG
     filename              : ../logs/application.log
 
 formatters:

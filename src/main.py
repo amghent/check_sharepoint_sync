@@ -175,6 +175,8 @@ def main():
     LOGGER.info(f"Default sleep: {default_sleep}")
 
     while True:
+        LOGGER.debug("Checking ...")
+
         if datetime.now() > next_run:
             run(config_data=config_data)
 
