@@ -130,24 +130,27 @@ def check_info(config_data):
 
 
 def notify(config_data):
-    with smtplib.SMTP(host=config_data["mail"]["server"], port=int(config_data["mail"]["port"])) as server:
-        to = []
+    try:
+        with smtplib.SMTP(host=config_data["mail"]["server"], port=int(config_data["mail"]["port"])) as server:
+            to = []
 
-        for t in config_data["mail"]["to"]:
-            to.append(t)
+            for t in config_data["mail"]["to"]:
+                to.append(t)
 
-        msg = MIMEMultipart()
+            msg = MIMEMultipart()
 
-        msg["subject"] = Header(config_data["mail"]["subject"])
-        msg["from"] = Header(config_data["mail"]["from"])
-        msg["to"] = Header(",".join(map(str, to)))
+            msg["subject"] = Header(config_data["mail"]["subject"])
+            msg["from"] = Header(config_data["mail"]["from"])
+            msg["to"] = Header(",".join(map(str, to)))
 
-        msg.attach(MIMEText(f"{config_data['mail']['text']}: {MACHINE_NAME}", "plain"))
+            msg.attach(MIMEText(f"{config_data['mail']['text']}: {MACHINE_NAME}", "plain"))
 
-        server.send_message(msg=msg)
+            server.send_message(msg=msg)
 
-        LOGGER.info(f"Notifying {msg['to']}")
-        LOGGER.info(f"Exiting, sync is NOT OK on {MACHINE_NAME} (exit on first fail)")
+            LOGGER.info(f"Notifying {msg['to']}")
+            LOGGER.info(f"Aborting check, sync is NOT OK on {MACHINE_NAME} (abort on first fail)")
+    except Exception as err:
+        LOGGER.error(f"Could not notify people because of a mail server error: {err}")
 
 
 def run(config_data):
