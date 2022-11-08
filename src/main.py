@@ -193,9 +193,9 @@ def main():
             LOGGER.info(f"Next run at: {next_run}")
         else:
             if to_the_second:
-                sleep(secs=default_sleep)
+                sleep(default_sleep)
             else:
-                sleep(secs=1)
+                sleep(1)
 
 
 if __name__ == "__main__":
