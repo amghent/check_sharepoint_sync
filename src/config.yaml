@@ -1,7 +1,7 @@
 ---
 
 name: check_sharepoint_sync
-version: 1.0.1
+version: 1.0.2
 
 cron: 0,15,30,45 * * * *
 sleep: 60
@@ -26,6 +26,6 @@ sync_dir:
 skip_files:
   - README_FIRST.txt
 
-sync_delta: 600
+sync_delta: 1200
 
 
