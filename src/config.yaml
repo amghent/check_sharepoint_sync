@@ -1,7 +1,7 @@
 ---
 
 name: check_sharepoint_sync
-version: 1.0.2
+version: 1.0.3
 
 cron: 0,15,30,45 * * * *
 sleep: 60
