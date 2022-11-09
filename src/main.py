@@ -2,7 +2,6 @@ import logging.config
 import os
 import socket
 import smtplib
-import sys
 
 import yaml
 
@@ -60,13 +59,27 @@ def log_dirs():
 def set_sync_dir(config_data):
     global SYNC_DIR
 
-    for sub_dir in config_data["sync_dir"]:
-        SYNC_DIR = os.path.join(SYNC_DIR, sub_dir)
+    sync_dir_found = False
+    name = "unknown"
 
-    LOGGER.info(f"Sync directory: {SYNC_DIR}")
+    for sync_dir in config_data["sync_dirs"]:
+        name = sync_dir["name"]
+        final_dir = HOME_DIR
 
-    assert os.path.exists(SYNC_DIR)
-    assert os.path.isdir(SYNC_DIR)
+        for sub_dir in sync_dir["sub_dirs"]:
+            final_dir = os.path.join(final_dir, sub_dir)
+
+        if os.path.exists(final_dir) and os.path.isdir(final_dir):
+            SYNC_DIR = final_dir
+            sync_dir_found = True
+            break
+
+    if sync_dir_found:
+        LOGGER.info(f"Sync directory: {SYNC_DIR} ({name})")
+        return True
+    else:
+        LOGGER.error(f"Could not find any of the pre-defined sync dirs")
+        return False
 
 
 def get_machine_name():
@@ -75,6 +88,8 @@ def get_machine_name():
     MACHINE_NAME = socket.gethostname()
 
     LOGGER.info(f"This buddy's name: {MACHINE_NAME}")
+
+    return True
 
 
 def write_info():
@@ -85,9 +100,13 @@ def write_info():
             output_file.write(f"Output written on {datetime.now()}\n\n(the content of this file is not important)")
 
         LOGGER.info(f"Writing info on sync directory for machine in {MACHINE_NAME}.txt")
+
+        return True
+
     except PermissionError as err:
         LOGGER.error(f"Error writing info on sync directory: {err}")
-        sys.exit(1)
+
+        return False
 
 
 def check_info(config_data):
@@ -116,14 +135,14 @@ def check_info(config_data):
 
         LOGGER.info(f"Verifying {f}")
 
-        creation_epoch = os.stat(os.path.join(SYNC_DIR, f)).st_ctime
-        creation_ts = datetime.fromtimestamp(creation_epoch)
+        modified_epoch = os.stat(os.path.join(SYNC_DIR, f)).st_mtime
+        modified_ts = datetime.fromtimestamp(modified_epoch)
 
-        if creation_ts < min_ts:
-            LOGGER.warning(f"File created on: {creation_ts}: TOO OLD")
+        if modified_ts < min_ts:
+            LOGGER.warning(f"File modified on: {modified_ts}: TOO OLD")
             return False
         else:
-            LOGGER.info(f"File created on: {creation_ts}: OK")
+            LOGGER.info(f"File modified on: {modified_ts}: OK")
 
     LOGGER.info(f"Exiting, sync is ok on {MACHINE_NAME}")
     return True
@@ -134,8 +153,12 @@ def notify(config_data):
         with smtplib.SMTP(host=config_data["mail"]["server"], port=int(config_data["mail"]["port"])) as server:
             to = []
 
-            for t in config_data["mail"]["to"]:
-                to.append(t)
+            for buddy in config_data["buddies"]:
+                if str(buddy["name"]).lower() == MACHINE_NAME.lower():
+                    for t in buddy["to"]:
+                        to.append(t)
+
+                    break
 
             msg = MIMEMultipart()
 
@@ -154,29 +177,27 @@ def notify(config_data):
 
 
 def run(config_data):
-    log_dirs()
-    set_sync_dir(config_data=config_data)
+    if not set_sync_dir(config_data=config_data):
+        return
+
     get_machine_name()
-    write_info()
 
-    ok = check_info(config_data=config_data)
+    if not write_info():
+        return
 
-    if not ok:
+    if not check_info(config_data=config_data):
         notify(config_data=config_data)
 
 
 def main():
     configure_logger()
     config_data = read_config()
+    log_dirs()
 
-    to_the_second = False
     cron = croniter(config_data["cron"], datetime.now())
     next_run = cron.get_next(ret_type=datetime)
-    default_sleep = int(config_data["sleep"])
-    prev_second = -1
 
     LOGGER.info(f"Next run at: {next_run}")
-    LOGGER.info(f"Default sleep: {default_sleep}")
 
     while True:
         LOGGER.debug("Checking ...")
@@ -188,15 +209,8 @@ def main():
 
             next_run = cron.get_next(ret_type=datetime)
             LOGGER.info(f"Next run at: {next_run}")
-        else:
-            if to_the_second:
-                sleep(default_sleep)
-            else:
-                if prev_second < now.second:
-                    to_the_second = True
-                else:
-                    prev_second = now.second
-                    sleep(1)
+
+        sleep(60 - now.second)
 
 
 if __name__ == "__main__":

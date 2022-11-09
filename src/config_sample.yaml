@@ -3,8 +3,7 @@
 name: check_sharepoint_sync
 version: 1.1.0
 
-cron: 0,15,30,45 * * * *
-sleep: 60
+cron: "*/15 * * * *"
 
 mail:
   server: mail.sidmar.be
@@ -26,19 +25,21 @@ buddies:
     to:
       - yves.vindevogel.external@arcelormittal.com
 
-sync_dir:
-  root_var: AMPythonCommunity
-  sub_dirs:
-  - Jobs
-  - Belgium
-  - check_sharepoint_sync
-
-sync_dir_en:
-  - ArcelorMittal
-  - AM Python - Documents
-  - Jobs
-  - Belgium
-  - check_sharepoint_sync
+sync_dirs:
+  - name: BE_NL
+    sub_dirs:
+      - ArcelorMittal
+      - AM Python - Documenten
+      - Jobs
+      - Belgium
+      - check_sharepoint_sync
+  - name: BE_EN
+    sub_dirs:
+      - ArcelorMittal
+      - AM Python - Documents
+      - Jobs
+      - Belgium
+      - check_sharepoint_sync
 
 skip_files:
   - README_FIRST.txt
