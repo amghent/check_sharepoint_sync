@@ -1,1 +1,0 @@
-Get-ChildItem –Path  "C:\PythonApps\check_sharepoint_sync\logs" –Recurse -include *.log | Where-Object { $_.CreationTime –lt (Get-Date).AddDays(-7) } | Remove-Item
