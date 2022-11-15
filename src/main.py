@@ -124,6 +124,8 @@ def check_info(config_data):
     file_list = os.listdir(SYNC_DIR)
     LOGGER.info(f"Found {len(file_list)} files in sync directory")
 
+    old_files = []
+
     for f in file_list:
         if f in skip_files:
             LOGGER.info(f"Skipping {f} (in list of files to skip)")
@@ -140,15 +142,15 @@ def check_info(config_data):
 
         if modified_ts < min_ts:
             LOGGER.warning(f"File modified on: {modified_ts}: TOO OLD")
-            return False
+            old_files.append([f, modified_ts])
         else:
             LOGGER.info(f"File modified on: {modified_ts}: OK")
 
     LOGGER.info(f"Exiting, sync is ok on {MACHINE_NAME}")
-    return True
+    return len(old_files) == 0, old_files
 
 
-def notify(config_data):
+def notify(config_data, old_files):
     try:
         with smtplib.SMTP(host=config_data["mail"]["server"], port=int(config_data["mail"]["port"])) as server:
             to = []
@@ -166,7 +168,13 @@ def notify(config_data):
             msg["from"] = Header(config_data["mail"]["from"])
             msg["to"] = Header(",".join(map(str, to)))
 
-            msg.attach(MIMEText(f"{config_data['mail']['text']}: {MACHINE_NAME}", "plain"))
+            body = f"{config_data['mail']['text']}: {MACHINE_NAME}\n\n"
+            body += f"File(s):\n"
+
+            for o in old_files:
+                body += f"{o[0]}: {o[1]}\n"
+
+            msg.attach(MIMEText(body, "plain"))
 
             server.send_message(msg=msg)
 
@@ -185,7 +193,9 @@ def run(config_data):
     if not write_info():
         return
 
-    if not check_info(config_data=config_data):
+    check_ok, old_files = check_info(config_data=config_data)
+
+    if not check_ok:
         notify(config_data=config_data)
 
 
