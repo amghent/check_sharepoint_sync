@@ -1,7 +1,7 @@
 ---
 
 name: check_sharepoint_sync
-version: 1.2.2
+version: 1.2.3
 
 cron: "*/15 * * * *"
 
