@@ -179,7 +179,6 @@ def notify(config_data, old_files):
             server.send_message(msg=msg)
 
             LOGGER.info(f"Notifying {msg['to']}")
-            LOGGER.info(f"Aborting check, sync is NOT OK on {MACHINE_NAME} (abort on first fail)")
     except Exception as err:
         LOGGER.error(f"Could not notify people because of a mail server error: {err}")
 
