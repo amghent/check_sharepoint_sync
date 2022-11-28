@@ -146,7 +146,9 @@ def check_info(config_data):
         else:
             LOGGER.info(f"File modified on: {modified_ts}: OK")
 
-    LOGGER.info(f"Exiting, sync is ok on {MACHINE_NAME}")
+    if len(old_files) == 0:
+        LOGGER.info(f"Exiting, sync is ok on {MACHINE_NAME}")
+
     return len(old_files) == 0, old_files
 
 
@@ -169,7 +171,7 @@ def notify(config_data, old_files):
             msg["to"] = Header(",".join(map(str, to)))
 
             body = f"{config_data['mail']['text']}: {MACHINE_NAME}\n\n"
-            body += f"File(s):\n"
+            body += f"File(s) too old detected:\n"
 
             for o in old_files:
                 body += f"{o[0]}: {o[1]}\n"
@@ -178,7 +180,7 @@ def notify(config_data, old_files):
 
             server.send_message(msg=msg)
 
-            LOGGER.info(f"Notifying {msg['to']}")
+            LOGGER.info(f"Notifying {msg['to']} that files are too old")
     except Exception as err:
         LOGGER.error(f"Could not notify people because of a mail server error: {err}")
 
