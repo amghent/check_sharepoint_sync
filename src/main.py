@@ -210,6 +210,8 @@ def main():
 
     LOGGER.info(f"Next run at: {next_run}")
 
+    sleep(60 - datetime.now().second)
+
     while True:
         LOGGER.debug("Checking ...")
 
