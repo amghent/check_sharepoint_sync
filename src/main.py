@@ -196,7 +196,7 @@ def run(config_data):
     check_ok, old_files = check_info(config_data=config_data)
 
     if not check_ok:
-        notify(config_data=config_data)
+        notify(config_data=config_data, old_files=old_files)
 
 
 def main():
