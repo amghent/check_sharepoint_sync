@@ -2,6 +2,7 @@ import logging.config
 import os
 import socket
 import smtplib
+import subprocess
 
 import yaml
 
@@ -90,6 +91,23 @@ def get_machine_name():
     LOGGER.info(f"This buddy's name: {MACHINE_NAME}")
 
     return True
+
+
+def restart_one_drive(config_data):
+    stop_cmd = config_data["stop_one_drive"]
+    start_cmd = config_data["start_one_drive"]
+    latency = int(config_data["latency_one_drive"])
+    wait = int(config_data["wait_one_drive"])
+
+    LOGGER.info(f"Restarting OneDrive to see if this solves the problem")
+    os.system(f'"{stop_cmd}"')
+    LOGGER.info(f"OneDrive stopped, waiting {latency} seconds to start OneDrive again")
+    sleep(latency)
+    LOGGER.info(f"Starting OneDrive")
+    subprocess.Popen(f'"{start_cmd}"')
+    LOGGER.info(f"OneDrive started, waiting {wait} seconds to let it sync")
+    sleep(wait)
+    LOGGER.info(f"OneDrive restarted")
 
 
 def write_info():
@@ -199,7 +217,11 @@ def run(config_data):
 
     check_ok, old_files = check_info(config_data=config_data)
 
-    if not check_ok:
+    if not check_ok:  # First check failed, restart OneDrive
+        restart_one_drive(config_data=config_data)
+        check_ok, old_files = check_info(config_data=config_data)
+
+    if not check_ok:  # Second check failed, something is wrong
         notify(config_data=config_data, old_files=old_files)
 
 

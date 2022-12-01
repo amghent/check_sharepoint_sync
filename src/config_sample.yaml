@@ -1,7 +1,7 @@
 ---
 
 name: check_sharepoint_sync
-version: 1.2.6
+version: 1.3.0
 
 cron: "*/15 6-20 * * 1-5"
 
@@ -47,4 +47,8 @@ skip_files:
 min_sync_delta: 1200
 max_sync_delta: 21600
 
+stop_one_drive: "taskkill /f /im OneDrive.exe"
+start_one_drive: "C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe"
+latency_one_drive: 3
+wait_one_drive: 20
 
