@@ -1,9 +1,9 @@
 ---
 
 name: check_sharepoint_sync
-version: 1.2.5
+version: 1.2.6
 
-cron: "*/15 * * * *"
+cron: "*/15 6-20 * * 1-5"
 
 mail:
   server: mail.sidmar.be
@@ -44,6 +44,7 @@ sync_dirs:
 skip_files:
   - README_FIRST.txt
 
-sync_delta: 1200
+min_sync_delta: 1200
+max_sync_delta: 21600
 
 

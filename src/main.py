@@ -115,11 +115,14 @@ def check_info(config_data):
     for sf in config_data["skip_files"]:
         skip_files.append(sf)
 
-    sync_delta = int(config_data["sync_delta"])
-    LOGGER.info(f"Synchronisation delta in seconds: {sync_delta}")
+    min_sync_delta = int(config_data["min_sync_delta"])
+    max_sync_delta = int(config_data["max_sync_delta"])
+    LOGGER.info(f"Synchronisation delta in seconds (min-max): {min_sync_delta}-{max_sync_delta}")
 
-    min_ts = datetime.now() - timedelta(seconds=sync_delta)
+    min_ts = datetime.now() - timedelta(seconds=min_sync_delta)
     LOGGER.info(f"Oldest timestamp allowed for files: {min_ts}")
+    max_ts = datetime.now() - timedelta(seconds=max_sync_delta)
+    LOGGER.info(f"Timestamp starting ignore for files: {max_ts}")
 
     file_list = os.listdir(SYNC_DIR)
     LOGGER.info(f"Found {len(file_list)} files in sync directory")
@@ -140,8 +143,8 @@ def check_info(config_data):
         modified_epoch = os.stat(os.path.join(SYNC_DIR, f)).st_mtime
         modified_ts = datetime.fromtimestamp(modified_epoch)
 
-        if modified_ts < min_ts:
-            LOGGER.warning(f"File modified on: {modified_ts}: TOO OLD")
+        if max_ts < modified_ts < min_ts:
+            LOGGER.warning(f"File modified on: {modified_ts}: TOO OLD (but not yet expired)")
             old_files.append([f, modified_ts])
         else:
             LOGGER.info(f"File modified on: {modified_ts}: OK")
